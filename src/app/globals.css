@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #fdfbf9;
+  --foreground: #292524;
+  --surface: #ffffff;
+  --accent: #c2410c;
+  --accent-dark: #9a3412;
+  --accent-light: #fbe8dc;
+  --muted: #f5f0eb;
+  --border: #e7dfd6;
+}
+
+.dark {
+  --background: #1c1917;
+  --foreground: #f5f0eb;
+  --surface: #262220;
+  --accent: #d96b35;
+  --accent-dark: #e88f5e;
+  --accent-light: rgba(217, 107, 53, 0.16);
+  --muted: #211d1b;
+  --border: #3a332e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-accent-light: var(--accent-light);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --font-sans: var(--font-poppins);
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Admin dashboard always renders in the light palette, regardless of the
+   site-wide dark mode toggle — it's an internal tool, not themed content. */
+.admin-light {
+  --background: #fdfbf9;
+  --foreground: #292524;
+  --surface: #ffffff;
+  --accent: #c2410c;
+  --accent-dark: #9a3412;
+  --accent-light: #fbe8dc;
+  --muted: #f5f0eb;
+  --border: #e7dfd6;
+  color-scheme: light;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in-up 0.6s ease-out both;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
