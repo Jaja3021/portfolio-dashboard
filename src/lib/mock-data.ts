@@ -141,7 +141,7 @@ export const PROPERTIES: Property[] = [
     title: "Downtown Commercial Space",
     description:
       "A versatile commercial space suited for retail, office, or business use in a high-traffic area.",
-    propertyType: "Commercial",
+    propertyType: "Bungalow",
     region: "Visayas",
     province: "Cebu",
     city: "Cebu City",
@@ -379,115 +379,15 @@ export const FAQ_ITEMS: FaqItem[] = [
 
 // Sample admin-dashboard data shown only while Supabase isn't connected (see
 // src/lib/data.ts) — read-only preview, not real submissions.
-export const MOCK_INQUIRIES: Inquiry[] = [
-  {
-    id: "i1",
-    name: "Maria Santos",
-    email: "maria.santos@example.com",
-    phone: "0917 123 4567",
-    preferredProperty: "Modern Family Home",
-    preferredLocation: "Cavite",
-    budget: "₱5M - ₱6M",
-    message: "Interested in scheduling a walkthrough sometime next week.",
-    status: "New",
-    createdAt: "2026-08-20",
-  },
-  {
-    id: "i2",
-    name: "Paolo Reyes",
-    email: "paolo.reyes@example.com",
-    phone: "0928 555 1212",
-    preferredProperty: "Skyline Residences Unit",
-    preferredLocation: "Taguig",
-    budget: "₱8M+",
-    message: "Looking for a rental-investment unit, would like more unit details.",
-    status: "Contacted",
-    createdAt: "2026-08-15",
-  },
-];
+export const MOCK_INQUIRIES: Inquiry[] = [];
 
-export const MOCK_CONVERSATIONS: Conversation[] = [
-  {
-    id: "c1",
-    sessionId: "demo-session-1",
-    contactName: null,
-    contactEmail: null,
-    lastMessageAt: "2026-08-21T09:15:00Z",
-    createdAt: "2026-08-21T09:10:00Z",
-    messages: [
-      {
-        id: "m1",
-        role: "assistant",
-        content: "Hi there! 👋 My name is Nathan. How can I assist you today?",
-        createdAt: "2026-08-21T09:10:00Z",
-      },
-      {
-        id: "m2",
-        role: "user",
-        content: "What properties are available in Cavite?",
-        createdAt: "2026-08-21T09:12:00Z",
-      },
-      {
-        id: "m3",
-        role: "assistant",
-        content: "We have a few listings in Cavite, including a Modern Family Home starting at ₱5M. Would you like more details?",
-        createdAt: "2026-08-21T09:15:00Z",
-      },
-    ],
-  },
-];
+export const MOCK_CONVERSATIONS: Conversation[] = [];
 
-export const MOCK_VIEWING_REQUESTS: ViewingRequest[] = [
-  {
-    id: "v1",
-    name: "Jenny Cruz",
-    email: "jenny.cruz@example.com",
-    phone: "0918 222 3344",
-    propertyText: "Greenview Townhouse",
-    preferredDate: "2026-09-10",
-    preferredTime: "14:00",
-    message: "Available anytime in the afternoon.",
-    status: "Pending",
-    createdAt: "2026-08-28",
-  },
-];
+export const MOCK_VIEWING_REQUESTS: ViewingRequest[] = [];
 
-export const MOCK_CLIENTS: Client[] = [
-  {
-    id: "c1",
-    name: "Maria Santos",
-    email: "maria.santos@example.com",
-    phone: "0917 123 4567",
-    source: "Website Inquiry",
-    status: "Active",
-    notes: "Looking for a house & lot in Cavite, budget ₱5M-₱6M.",
-    nextFollowUp: "2026-09-12",
-    createdAt: "2026-08-20",
-  },
-  {
-    id: "c2",
-    name: "Paolo Reyes",
-    email: "paolo.reyes@example.com",
-    phone: "0928 555 1212",
-    source: "Facebook",
-    status: "Lead",
-    notes: "Interested in a rental-investment condo unit in Taguig.",
-    nextFollowUp: null,
-    createdAt: "2026-08-15",
-  },
-];
+export const MOCK_CLIENTS: Client[] = [];
 
-export const MOCK_DEALS: Deal[] = [
-  {
-    id: "d1",
-    clientName: "Maria Santos",
-    propertyTitle: "Modern Family Home",
-    stage: "Reservation",
-    amount: 5_800_000,
-    notes: "Reservation fee paid, awaiting Pag-IBIG loan approval.",
-    createdAt: "2026-08-25",
-  },
-];
+export const MOCK_DEALS: Deal[] = [];
 
 export const MOCK_SETTINGS: SiteSettings = {
   phone: CONTACT_INFO.phone,

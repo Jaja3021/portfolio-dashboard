@@ -103,6 +103,7 @@ export interface ConversationRow {
   contact_email: string | null;
   last_message_at: string;
   created_at: string;
+  human_takeover: boolean;
   messages: MessageRow[] | null;
 }
 

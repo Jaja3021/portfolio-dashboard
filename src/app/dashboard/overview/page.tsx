@@ -1,17 +1,44 @@
 import {
-  ArrowBendUpLeftIcon as BounceIcon,
-  CalendarIcon as Calendar,
-  CalendarBlankIcon as CalendarDays,
+  CalendarBlankIcon as CalendarBlank,
+  CalendarCheckIcon as CalendarCheck,
+  ChatsCircleIcon as ChatsCircle,
+  ChatCircleTextIcon as MessageSquareText,
   EyeIcon as Eye,
-  TimerIcon as Timer,
-  UsersIcon as Users,
+  WalletIcon as Wallet,
 } from "@phosphor-icons/react/ssr";
+import Link from "next/link";
 import { DailyViewsChart } from "@/components/admin/DailyViewsChart";
-import { getAnalyticsOverview, getPageViewStats, type Trend } from "@/lib/data";
+import { DonutChart } from "@/components/admin/DonutChart";
+import { getAnalyticsOverview, getDashboardOverview } from "@/lib/data";
+import { PUBLIC_SITE_URL } from "@/lib/site";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { formatPrice } from "@/lib/utils";
+import type { InquiryStatus, ViewingRequestStatus } from "@/lib/types";
+
+const INQUIRY_STATUS_STYLES: Record<InquiryStatus, string> = {
+  New: "bg-accent-light text-accent-dark",
+  Contacted: "bg-blue-50 text-blue-700",
+  "In Progress": "bg-amber-50 text-amber-700",
+  Closed: "bg-gray-100 text-gray-500",
+};
+
+const VIEWING_STATUS_STYLES: Record<ViewingRequestStatus, string> = {
+  Pending: "bg-amber-50 text-amber-700",
+  Confirmed: "bg-accent-light text-accent-dark",
+  Completed: "bg-blue-50 text-blue-700",
+  Cancelled: "bg-gray-100 text-gray-500",
+};
+
+const VIEWING_STATUS_DOTS: Record<ViewingRequestStatus, string> = {
+  Pending: "bg-amber-400",
+  Confirmed: "bg-accent",
+  Completed: "bg-blue-500",
+  Cancelled: "bg-gray-400",
+};
 
 export default async function AdminOverviewPage() {
-  const [stats, analytics] = await Promise.all([getPageViewStats(), getAnalyticsOverview()]);
+  const [analytics, overview] = await Promise.all([getAnalyticsOverview(), getDashboardOverview()]);
+  const { kpis, viewingStatus, recentInquiries, upcomingViewings } = overview;
   const lastUpdated = new Date().toLocaleString("en-PH", {
     month: "short",
     day: "numeric",
@@ -19,12 +46,16 @@ export default async function AdminOverviewPage() {
     minute: "2-digit",
   });
 
+  const formatDate = (isoDate: string) =>
+    new Date(`${isoDate}T00:00:00`).toLocaleDateString("en-PH", { month: "short", day: "numeric" });
+  const todayKey = new Date().toISOString().slice(0, 10);
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-2">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Overview</h1>
-          <p className="mt-1 text-sm text-foreground/60">Portfolio site visits</p>
+          <p className="mt-1 text-sm text-foreground/60">Business performance at a glance</p>
         </div>
         <p className="text-xs text-foreground/40">Last updated {lastUpdated}</p>
       </div>
@@ -35,160 +66,219 @@ export default async function AdminOverviewPage() {
         </p>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard icon={Eye} label="Total Views" value={stats.total} />
-        <StatCard icon={Calendar} label="Views Today" value={stats.today} />
-        <StatCard icon={CalendarDays} label="Views This Week" value={stats.thisWeek} />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard
+          icon={Wallet}
+          iconClassName="bg-accent-light text-accent"
+          label="Closed Revenue"
+          value={formatPrice(kpis.closedRevenue)}
+          caption={`${kpis.closedRevenueCount} closed deal${kpis.closedRevenueCount === 1 ? "" : "s"}`}
+          href="/dashboard/deals"
+        />
+        <KpiCard
+          icon={MessageSquareText}
+          iconClassName="bg-blue-50 text-blue-600"
+          label="New Inquiries"
+          value={kpis.inquiriesNew.toLocaleString("en-PH")}
+          caption={`of ${kpis.inquiriesTotal.toLocaleString("en-PH")} total`}
+          href="/dashboard/inquiries"
+        />
+        <KpiCard
+          icon={CalendarCheck}
+          iconClassName="bg-emerald-50 text-emerald-600"
+          label="Confirmed Bookings"
+          value={kpis.confirmedBookings.toLocaleString("en-PH")}
+          caption="Viewings confirmed"
+          href="/dashboard/viewing-requests"
+        />
+        <KpiCard
+          icon={ChatsCircle}
+          iconClassName="bg-violet-50 text-violet-600"
+          label="Conversations"
+          value={kpis.conversationsTotal.toLocaleString("en-PH")}
+          caption={
+            kpis.conversationsNeedingReply > 0
+              ? `${kpis.conversationsNeedingReply} awaiting reply`
+              : "All caught up"
+          }
+          href="/dashboard/conversations"
+        />
+        <KpiCard
+          icon={Eye}
+          iconClassName="bg-slate-100 text-slate-500"
+          label="Website Views"
+          value={kpis.websiteViews.toLocaleString("en-PH")}
+          caption={`${kpis.websiteViewsThisWeek.toLocaleString("en-PH")} this week`}
+          href={PUBLIC_SITE_URL}
+          external
+        />
+        <KpiCard
+          icon={CalendarBlank}
+          iconClassName="bg-amber-50 text-amber-600"
+          label="Calendar / Schedule"
+          value={kpis.calendarUpcoming.toLocaleString("en-PH")}
+          caption="Upcoming viewings & follow-ups"
+          href="/dashboard/calendar"
+        />
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={Users}
-          label="Unique Visitors"
-          value={analytics.uniqueVisitors}
-          trend={analytics.uniqueVisitorsTrend}
-          periodLabel="last week"
-        />
-        <StatCard
-          icon={CalendarDays}
-          label="Views This Month"
-          value={analytics.viewsLast30Days}
-          trend={analytics.viewsLast30DaysTrend}
-          periodLabel="last 30 days"
-        />
-        <StatCard
-          icon={BounceIcon}
-          label="Bounce Rate"
-          value={analytics.bounceRate}
-          trend={analytics.bounceRateTrend}
-          periodLabel="last week"
-          format={(v) => `${v.toFixed(1)}%`}
-          goodDirection="down"
-        />
-        <StatCard
-          icon={Timer}
-          label="Average Time on Page"
-          value={analytics.avgTimeOnPageSeconds}
-          trend={analytics.avgTimeOnPageTrend}
-          periodLabel="last week"
-          format={formatDuration}
-        />
-      </div>
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <section className="rounded-2xl border border-border bg-white p-6 lg:col-span-2">
+          <div className="mb-4">
+            <h2 className="text-sm font-semibold text-foreground">Views Overview</h2>
+            <p className="text-xs text-foreground/50">Daily site visits, last 30 days</p>
+          </div>
+          <DailyViewsChart data={analytics.dailyViews} />
+        </section>
 
-      <section className="mt-6 rounded-2xl border border-border bg-white p-6">
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold text-foreground">Daily Views</h2>
-          <p className="text-xs text-foreground/50">Last 30 days</p>
-        </div>
-        <DailyViewsChart data={analytics.dailyViews} />
-      </section>
-
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section className="rounded-2xl border border-border bg-white p-6">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Top Referrers</h2>
-          {analytics.topReferrers.length === 0 ? (
-            <p className="text-sm text-foreground/50">No visits recorded yet.</p>
+          <div className="mb-4">
+            <h2 className="text-sm font-semibold text-foreground">Traffic Sources</h2>
+            <p className="text-xs text-foreground/50">Where visits come from</p>
+          </div>
+          <DonutChart data={analytics.topReferrers} />
+        </section>
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <section className="rounded-2xl border border-border bg-white p-6 lg:col-span-2">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">Recent Inquiries</h2>
+            <Link href="/dashboard/inquiries" className="text-xs font-medium text-accent hover:underline">
+              View all
+            </Link>
+          </div>
+          {recentInquiries.length === 0 ? (
+            <p className="text-sm text-foreground/50">No inquiries yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px] text-left text-sm">
+                <thead className="border-b border-border text-xs uppercase tracking-wide text-foreground/50">
+                  <tr>
+                    <th className="py-2 pr-3">Name</th>
+                    <th className="py-2 pr-3">Property</th>
+                    <th className="py-2 pr-3">Date</th>
+                    <th className="py-2 pr-3 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentInquiries.map((i) => (
+                    <tr key={i.id} className="border-b border-border last:border-0">
+                      <td className="py-2.5 pr-3 font-medium text-foreground">{i.name}</td>
+                      <td className="py-2.5 pr-3 text-foreground/60">{i.preferredProperty ?? "—"}</td>
+                      <td className="py-2.5 pr-3 text-foreground/60">
+                        {new Date(i.createdAt).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}
+                      </td>
+                      <td className="py-2.5 pr-3 text-right">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${INQUIRY_STATUS_STYLES[i.status]}`}
+                        >
+                          {i.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-border bg-white p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">Upcoming Viewings</h2>
+            <Link href="/dashboard/viewing-requests" className="text-xs font-medium text-accent hover:underline">
+              View all
+            </Link>
+          </div>
+          {upcomingViewings.length === 0 ? (
+            <p className="text-sm text-foreground/50">Nothing scheduled yet.</p>
           ) : (
             <ul className="flex flex-col gap-3">
-              {analytics.topReferrers.map((r) => {
-                const total = analytics.topReferrers.reduce((sum, x) => sum + x.count, 0);
-                const pct = total > 0 ? (r.count / total) * 100 : 0;
-                return (
-                  <li key={r.label} className="flex items-center gap-3">
-                    <span className="w-24 shrink-0 truncate text-sm text-foreground/80">{r.label}</span>
-                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                      <span className="block h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
-                    </span>
-                    <span className="w-10 shrink-0 text-right text-sm font-medium text-foreground">{r.count}</span>
-                  </li>
-                );
-              })}
+              {upcomingViewings.map((v) => (
+                <li key={v.id} className="flex items-start justify-between gap-3 rounded-xl border border-border p-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">{v.name}</p>
+                    <p className="truncate text-xs text-foreground/50">{v.propertyText ?? "Property TBD"}</p>
+                    <p className="mt-1 text-[11px] text-foreground/40">
+                      {formatDate(v.preferredDate)} · {v.preferredTime}
+                      {v.preferredDate < todayKey && v.status === "Pending" && (
+                        <span className="ml-1.5 font-medium text-rose-600">· Overdue</span>
+                      )}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${VIEWING_STATUS_STYLES[v.status]}`}
+                  >
+                    {v.status}
+                  </span>
+                </li>
+              ))}
             </ul>
           )}
         </section>
-
-        <section className="rounded-2xl border border-border bg-white p-6">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">Most Viewed Pages</h2>
-          {analytics.topPages.length === 0 ? (
-            <p className="text-sm text-foreground/50">No visits recorded yet.</p>
-          ) : (
-            <ol className="flex flex-col gap-3">
-              {analytics.topPages.map((p, i) => (
-                <li key={p.path} className="flex items-center gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-light text-xs font-semibold text-accent">
-                    {i + 1}
-                  </span>
-                  <span className="flex-1 truncate text-sm text-foreground/80">{p.path}</span>
-                  <span className="shrink-0 text-sm font-medium text-foreground">{p.count.toLocaleString("en-PH")}</span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </section>
       </div>
+
+      <section className="mt-4 rounded-2xl border border-border bg-white p-6">
+        <div className="mb-4">
+          <h2 className="text-sm font-semibold text-foreground">Booking Status Overview</h2>
+          <p className="text-xs text-foreground/50">All viewing requests, all time</p>
+        </div>
+        <div className="flex flex-wrap gap-x-10 gap-y-4">
+          {(
+            [
+              ["Confirmed", viewingStatus.confirmed],
+              ["Pending / New", viewingStatus.pending],
+              ["Completed", viewingStatus.completed],
+              ["Cancelled", viewingStatus.cancelled],
+            ] as [string, number][]
+          ).map(([label, count]) => {
+            const key = (label === "Pending / New" ? "Pending" : label) as ViewingRequestStatus;
+            return (
+              <div key={label} className="flex items-center gap-2.5">
+                <span className={`h-2.5 w-2.5 rounded-full ${VIEWING_STATUS_DOTS[key]}`} />
+                <p className="text-lg font-semibold text-foreground">{count}</p>
+                <p className="text-xs text-foreground/50">{label}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.round(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function TrendBadge({ trend, goodDirection }: { trend: Trend; goodDirection: "up" | "down" }) {
-  if (trend.isNew) {
-    return <span className="rounded-full bg-accent-light px-2 py-0.5 text-[11px] font-medium text-accent-dark">New</span>;
-  }
-  if (trend.pct === null) {
-    return <span className="text-[11px] text-foreground/40">No prior data</span>;
-  }
-  if (trend.pct === 0) {
-    return <span className="text-[11px] text-foreground/40">No change</span>;
-  }
-  const isIncrease = trend.pct > 0;
-  const isGood = isIncrease === (goodDirection === "up");
-  const arrow = isIncrease ? "▲" : "▼";
-  return (
-    <span className={`text-[11px] font-medium ${isGood ? "text-green-600" : "text-red-500"}`}>
-      {arrow} {Math.abs(trend.pct).toFixed(0)}%
-    </span>
-  );
-}
-
-function StatCard({
+function KpiCard({
   icon: Icon,
+  iconClassName,
   label,
   value,
-  trend,
-  periodLabel,
-  format,
-  goodDirection = "up",
+  caption,
+  href,
+  external = false,
 }: {
-  icon: typeof Eye;
+  icon: typeof Wallet;
+  iconClassName: string;
   label: string;
-  value: number | null;
-  trend?: Trend;
-  periodLabel?: string;
-  format?: (value: number) => string;
-  goodDirection?: "up" | "down";
+  value: string;
+  caption: string;
+  href: string;
+  external?: boolean;
 }) {
-  const displayValue = value === null ? "—" : format ? format(value) : value.toLocaleString("en-PH");
-
   return (
-    <div className="rounded-2xl border border-border bg-white p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <span className="w-fit rounded-xl bg-accent-light p-3">
-          <Icon className="h-5 w-5 text-accent" />
+    <Link
+      href={href}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      className="block rounded-2xl border border-border bg-white p-5 transition-colors hover:border-accent"
+    >
+      <div className="mb-3 flex items-center gap-2.5">
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${iconClassName}`}>
+          <Icon className="h-4 w-4" />
         </span>
-        {trend && value !== null && <TrendBadge trend={trend} goodDirection={goodDirection} />}
+        <p className="text-xs font-medium text-foreground/50">{label}</p>
       </div>
-      <p className="text-3xl font-semibold text-foreground">{displayValue}</p>
-      <p className="mt-1 text-sm text-foreground/60">{label}</p>
-      {value === null && trend && <p className="mt-1 text-[11px] text-foreground/40">Needs visitor session tracking</p>}
-      {value !== null && periodLabel && trend && !trend.isNew && trend.pct !== null && trend.pct !== 0 && (
-        <p className="mt-1 text-[11px] text-foreground/40">vs {periodLabel}</p>
-      )}
-    </div>
+      <p className="text-2xl font-semibold text-foreground">{value}</p>
+      <p className="mt-1 text-xs text-foreground/50">{caption}</p>
+    </Link>
   );
 }

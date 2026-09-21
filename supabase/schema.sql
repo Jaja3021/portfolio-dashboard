@@ -13,7 +13,7 @@ create table if not exists properties (
   title text not null,
   description text not null default '',
   property_type text not null check (
-    property_type in ('House & Lot', 'Condominium', 'Townhouse', 'Lot & Land', 'Commercial', 'Single Attached')
+    property_type in ('House & Lot', 'Condominium', 'Townhouse', 'Lot & Land', 'Bungalow', 'Single Attached')
   ),
   region text not null check (region in ('Luzon', 'Visayas', 'Mindanao')),
   province text not null,
@@ -144,8 +144,13 @@ create table if not exists conversations (
   contact_name text,
   contact_email text,
   last_message_at timestamptz not null default now(),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  human_takeover boolean not null default false
 );
+
+-- Lets the dashboard flag a conversation so the n8n bot stops auto-replying
+-- once Arnold has taken over (added after the initial conversations rollout).
+alter table conversations add column if not exists human_takeover boolean not null default false;
 
 create table if not exists messages (
   id uuid primary key default gen_random_uuid(),
@@ -276,8 +281,11 @@ create policy "site_settings_admin_update" on site_settings for update to authen
 -- no anon/authenticated insert policy is needed or granted.
 drop policy if exists "conversations_admin_select" on conversations;
 drop policy if exists "conversations_admin_delete" on conversations;
+drop policy if exists "conversations_admin_update" on conversations;
 create policy "conversations_admin_select" on conversations for select to authenticated using (true);
 create policy "conversations_admin_delete" on conversations for delete to authenticated using (true);
+-- Lets the dashboard toggle human_takeover (pause/resume the bot).
+create policy "conversations_admin_update" on conversations for update to authenticated using (true) with check (true);
 
 drop policy if exists "messages_admin_select" on messages;
 drop policy if exists "messages_admin_insert" on messages;

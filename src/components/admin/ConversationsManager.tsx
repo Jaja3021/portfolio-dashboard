@@ -1,6 +1,11 @@
 "use client";
 
-import { ArrowUpIcon as ArrowUp, ChatsCircleIcon as ChatsCircle, UserCircleIcon as UserCircle } from "@phosphor-icons/react/ssr";
+import {
+  ArrowLeftIcon as ArrowLeft,
+  ArrowUpIcon as ArrowUp,
+  ChatsCircleIcon as ChatsCircle,
+  UserCircleIcon as UserCircle,
+} from "@phosphor-icons/react/ssr";
 import { useState } from "react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import type { Conversation } from "@/lib/types";
@@ -48,6 +53,10 @@ export function ConversationsManager({ initialConversations }: { initialConversa
       return;
     }
 
+    if (!selected.humanTakeover) {
+      await createClient().from("conversations").update({ human_takeover: true }).eq("id", selected.id);
+    }
+
     setReply("");
     setConversations((prev) =>
       prev.map((c) =>
@@ -55,6 +64,7 @@ export function ConversationsManager({ initialConversations }: { initialConversa
           ? {
               ...c,
               lastMessageAt: data.created_at,
+              humanTakeover: true,
               messages: [
                 ...c.messages,
                 { id: data.id, role: data.role, content: data.content, createdAt: data.created_at },
@@ -62,6 +72,15 @@ export function ConversationsManager({ initialConversations }: { initialConversa
             }
           : c
       )
+    );
+  };
+
+  const handleToggleTakeover = async () => {
+    if (!selected) return;
+    const nextValue = !selected.humanTakeover;
+    await createClient().from("conversations").update({ human_takeover: nextValue }).eq("id", selected.id);
+    setConversations((prev) =>
+      prev.map((c) => (c.id === selected.id ? { ...c, humanTakeover: nextValue } : c))
     );
   };
 
@@ -79,8 +98,12 @@ export function ConversationsManager({ initialConversations }: { initialConversa
           No conversations yet.
         </p>
       ) : (
-        <div className="flex gap-4">
-          <div className="flex w-full max-w-sm shrink-0 flex-col gap-2">
+        <div className="flex flex-col gap-4 md:flex-row">
+          <div
+            className={`w-full shrink-0 flex-col gap-2 md:flex md:max-w-sm ${
+              selected ? "hidden md:flex" : "flex"
+            }`}
+          >
             {conversations.map((c) => (
               <button
                 key={c.id}
@@ -101,7 +124,11 @@ export function ConversationsManager({ initialConversations }: { initialConversa
             ))}
           </div>
 
-          <div className="flex min-w-0 flex-1 flex-col rounded-2xl border border-border bg-white shadow-sm">
+          <div
+            className={`min-w-0 flex-1 flex-col rounded-2xl border border-border bg-white shadow-sm ${
+              selected ? "flex" : "hidden md:flex"
+            }`}
+          >
             {!selected ? (
               <div className="flex h-full flex-col items-center justify-center gap-2 py-16 text-foreground/40">
                 <ChatsCircle className="h-8 w-8" />
@@ -109,11 +136,36 @@ export function ConversationsManager({ initialConversations }: { initialConversa
               </div>
             ) : (
               <>
-                <div className="border-b border-border p-5 pb-3">
-                  <p className="font-semibold text-foreground">
-                    {selected.contactName || `Visitor session ${selected.sessionId}`}
-                  </p>
-                  {selected.contactEmail && <p className="text-xs text-foreground/60">{selected.contactEmail}</p>}
+                <div className="flex items-center justify-between gap-3 border-b border-border p-4 pb-3 sm:p-5 sm:pb-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(null)}
+                      aria-label="Back to conversations"
+                      className="-ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-foreground/60 hover:bg-muted md:hidden"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-foreground">
+                        {selected.contactName || `Visitor session ${selected.sessionId}`}
+                      </p>
+                      {selected.contactEmail && (
+                        <p className="truncate text-xs text-foreground/60">{selected.contactEmail}</p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleToggleTakeover}
+                    className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                      selected.humanTakeover
+                        ? "bg-accent-light text-accent"
+                        : "bg-muted text-foreground/60 hover:bg-border"
+                    }`}
+                  >
+                    {selected.humanTakeover ? "Bot paused · Resume bot" : "Bot active · Pause bot"}
+                  </button>
                 </div>
 
                 <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-5">

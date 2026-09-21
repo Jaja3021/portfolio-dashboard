@@ -5,7 +5,7 @@ export type PropertyType =
   | "Condominium"
   | "Townhouse"
   | "Lot & Land"
-  | "Commercial"
+  | "Bungalow"
   | "Single Attached";
 
 export type PropertyStatus = "RFO" | "Pre-selling" | "Accept Reservation";
@@ -131,6 +131,7 @@ export interface Conversation {
   contactEmail: string | null;
   lastMessageAt: string;
   createdAt: string;
+  humanTakeover: boolean;
   messages: ConversationMessage[];
 }
 

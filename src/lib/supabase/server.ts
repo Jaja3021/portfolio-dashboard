@@ -20,6 +20,7 @@ export function createAnonClient() {
   }
   return createSupabaseClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
     auth: { autoRefreshToken: false, persistSession: false },
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
   });
 }
 
@@ -46,5 +47,6 @@ export async function createClient() {
         }
       },
     },
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
   });
 }

@@ -250,6 +250,8 @@ export function CalendarView({
 
       {view === "calendar" ? (
         <div className="overflow-hidden rounded-2xl border border-border bg-white">
+          <div className="overflow-x-auto">
+          <div className="min-w-[560px]">
           <div className="grid grid-cols-7 border-b border-border bg-muted/50">
             {WEEKDAYS.map((w) => (
               <div key={w} className="px-2 py-2 text-center text-[11px] font-semibold tracking-wide text-foreground/50">
@@ -302,6 +304,8 @@ export function CalendarView({
                 </div>
               );
             })}
+          </div>
+          </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-4 border-t border-border px-4 py-3">

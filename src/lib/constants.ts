@@ -7,7 +7,7 @@ export const PROPERTY_TYPES: PropertyType[] = [
   "Condominium",
   "Townhouse",
   "Lot & Land",
-  "Commercial",
+  "Bungalow",
   "Single Attached",
 ];
 
