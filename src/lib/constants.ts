@@ -60,6 +60,15 @@ export const HOUSE_TYPES = [
   "Bungalow",
 ] as const;
 
+export const CONDO_UNIT_TYPES = [
+  "Studio",
+  "1 Bedroom",
+  "2 Bedroom",
+  "3 Bedroom",
+  "Loft",
+  "Penthouse",
+] as const;
+
 export const NEARBY_ESTABLISHMENT_TYPES = ["Restaurant", "Mall", "Hospital", "School", "Grocery", "Road"] as const;
 
 export const CLIENT_STATUSES: ClientStatus[] = ["Lead", "Contacted", "Active", "Closed"];

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { AMENITIES_LIST, FEATURES_LIST, PROPERTY_STATUSES, PROPERTY_TYPES, REGIONS } from "@/lib/constants";
+import { AMENITIES_LIST, CONDO_UNIT_TYPES, FEATURES_LIST, HOUSE_TYPES, PROPERTY_STATUSES, PROPERTY_TYPES, REGIONS } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
@@ -29,7 +29,7 @@ Return ONLY a JSON object (no markdown fences, no commentary) with these fields 
   "listingType": "For Sale" | "For Rent/Lease" | "Pasalo" | null, // "Pasalo" = the buyer assumes/takes over the seller's existing mortgage/loan balance
   "condition": "New" | "Pre-owned" | null,
   "newCondition": ${PROPERTY_STATUSES.map((s) => `"${s}"`).join(" | ")} | null,
-  "houseType": string | null,
+  "houseType": string | null, // if propertyType is "Condominium", use a unit type like ${CONDO_UNIT_TYPES.map((t) => `"${t}"`).join(", ")}; otherwise a house type like ${HOUSE_TYPES.map((t) => `"${t}"`).join(", ")}
   "bedrooms": number | null,
   "bathrooms": number | null,
   "floorAreaSqm": number | null,

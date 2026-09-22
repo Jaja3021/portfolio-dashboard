@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, inputClass } from "@/components/ui/FormField";
 import {
   AMENITIES_LIST,
+  CONDO_UNIT_TYPES,
   FEATURES_LIST,
   HOUSE_TYPES,
   LISTING_TYPES,
@@ -262,6 +263,7 @@ export function PropertyFormModal({
 
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [descGenerating, setDescGenerating] = useState(false);
   const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -562,6 +564,41 @@ export function PropertyFormModal({
     setStage("form");
   };
 
+  // Rewrites just the description via AI, using the current description text
+  // (and any uploaded photos) as input — used from the Edit form, where there's
+  // no Stage 1 quick-entry step to have generated one already. Leaves every
+  // other field untouched.
+  const handleGenerateDescription = async () => {
+    setAiError(null);
+    setDescGenerating(true);
+    try {
+      const inputText = (draft.description || draft.rawText).trim();
+      const imagesToSend = draft.newImages.slice(0, AI_MAX_IMAGES);
+      const images = await Promise.all(imagesToSend.map((f) => compressImageToBase64(f)));
+
+      const res = await fetch("/api/ai-autofill", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ description: inputText, images }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.result?.description) {
+        throw new Error(json?.error ?? "AI request failed.");
+      }
+
+      const generated = json.result.description as string;
+      setDraft((d) => ({ ...d, generatedDescription: generated, description: generated }));
+      setHighlighted((prev) => new Set(prev).add("description"));
+      setToast("Generated a new description — review it below.");
+    } catch (e) {
+      console.warn("Description generation failed:", e);
+      setAiError(e instanceof Error ? e.message : "Couldn't generate a description.");
+      setToast("Couldn't generate a description — please write one manually.");
+    } finally {
+      setDescGenerating(false);
+    }
+  };
+
   const renderImageThumbnails = () => (
     <>
       {draft.existingImages.map((url, i) => (
@@ -796,7 +833,7 @@ export function PropertyFormModal({
                   </Field>
                 )}
 
-                <Field label="House Type">
+                <Field label={draft.propertyType === "Condominium" ? "Unit Type" : "House Type"}>
                   <input
                     list="house-type-options"
                     value={draft.houseType}
@@ -804,7 +841,7 @@ export function PropertyFormModal({
                     className={inputClass(false) + hl("houseType")}
                   />
                   <datalist id="house-type-options">
-                    {HOUSE_TYPES.map((t) => (
+                    {(draft.propertyType === "Condominium" ? CONDO_UNIT_TYPES : HOUSE_TYPES).map((t) => (
                       <option key={t} value={t} />
                     ))}
                   </datalist>
@@ -967,9 +1004,18 @@ export function PropertyFormModal({
                     >
                       Use generated
                     </button>
+                    <button
+                      type="button"
+                      disabled={descGenerating || !draft.description.trim()}
+                      onClick={handleGenerateDescription}
+                      className="rounded-full border border-accent px-3 py-1 text-xs text-accent disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      {descGenerating ? "Generating..." : "Generate with AI"}
+                    </button>
                   </div>
                 </div>
                 <textarea rows={5} value={draft.description} onChange={set("description")} className={inputClass(false) + hl("description")} />
+                {aiError && <p className="mt-1 text-xs text-red-500">{aiError}</p>}
               </div>
 
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
