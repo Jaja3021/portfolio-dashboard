@@ -47,7 +47,10 @@ const SINGLE_ATTACHED_IMAGES = [
 export const HERO_IMAGE = img("photo-1600585154340-be6161a56a0c");
 export const ABOUT_PORTRAIT_PLACEHOLDER = "";
 
-export const PROPERTIES: Property[] = [
+const PROPERTIES_BASE: Omit<
+  Property,
+  "listingType" | "condition" | "houseType" | "floors" | "carParkingSpaces" | "developer" | "subdivision" | "propertyAddress"
+>[] = [
   {
     id: "p1",
     title: "Modern Family Home",
@@ -308,6 +311,18 @@ export const PROPERTIES: Property[] = [
     createdAt: "2026-03-01",
   },
 ];
+
+export const PROPERTIES: Property[] = PROPERTIES_BASE.map((p) => ({
+  ...p,
+  listingType: "For Sale",
+  condition: null,
+  houseType: null,
+  floors: null,
+  carParkingSpaces: null,
+  developer: null,
+  subdivision: null,
+  propertyAddress: null,
+}));
 
 export const TESTIMONIALS: Testimonial[] = [
   {

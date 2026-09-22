@@ -2,6 +2,8 @@ import type {
   ClientStatus,
   DealStage,
   InquiryStatus,
+  ListingType,
+  PropertyCondition,
   PropertyStatus,
   PropertyType,
   Region,
@@ -26,6 +28,14 @@ export interface PropertyRow {
   features: string[];
   amenities: string[];
   nearby_locations: string[];
+  listing_type: ListingType | null;
+  condition: PropertyCondition | null;
+  house_type: string | null;
+  floors: number | null;
+  car_parking_spaces: number | null;
+  developer: string | null;
+  subdivision: string | null;
+  property_address: string | null;
   created_at: string;
   property_images: { image_url: string }[] | null;
 }

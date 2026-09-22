@@ -1,4 +1,4 @@
-import type { ClientStatus, DealStage, PriceRangeKey, PropertyType, Region } from "./types";
+import type { ClientStatus, DealStage, ListingType, PriceRangeKey, PropertyCondition, PropertyType, Region } from "./types";
 
 export const REGIONS: Region[] = ["Luzon", "Visayas", "Mindanao"];
 
@@ -12,6 +12,55 @@ export const PROPERTY_TYPES: PropertyType[] = [
 ];
 
 export const PROPERTY_STATUSES = ["RFO", "Pre-selling", "Accept Reservation"] as const;
+
+export const AMENITIES_LIST = [
+  "Basketball Court",
+  "Badminton Court",
+  "Billiard Room",
+  "Church",
+  "Cinema / Hall",
+  "Clubhouse",
+  "Commercial Center",
+  "Function Room/Hall",
+  "Garden",
+  "Gym",
+  "Kiddie Pool",
+  "Party Hall",
+  "Play Area/Playground",
+  "Swimming Pool",
+  "Walking/Jogging Trail",
+] as const;
+
+export const FEATURES_LIST = [
+  "24-Hour Maintenance",
+  "24-Hour Security",
+  "Air-Conditioning",
+  "Balcony",
+  "CCTV",
+  "Car Parking/Garage",
+  "Elevator",
+  "Fire Alarm",
+  "Fully Furnished",
+  "Intercom",
+  "Maid's Room",
+  "Overlooking View",
+  "Storage Room",
+  "Water Heater",
+] as const;
+
+export const LISTING_TYPES: ListingType[] = ["For Sale", "For Rent/Lease", "Pasalo"];
+
+export const PROPERTY_CONDITIONS: PropertyCondition[] = ["New", "Pre-owned"];
+
+export const HOUSE_TYPES = [
+  "Single Attached",
+  "Single Detached",
+  "Duplex",
+  "Townhouse",
+  "Bungalow",
+] as const;
+
+export const NEARBY_ESTABLISHMENT_TYPES = ["Restaurant", "Mall", "Hospital", "School", "Grocery", "Road"] as const;
 
 export const CLIENT_STATUSES: ClientStatus[] = ["Lead", "Contacted", "Active", "Closed"];
 

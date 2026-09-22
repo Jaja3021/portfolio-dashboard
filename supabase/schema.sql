@@ -28,8 +28,39 @@ create table if not exists properties (
   features text[] not null default '{}',
   amenities text[] not null default '{}',
   nearby_locations text[] not null default '{}',
+  listing_type text,
+  condition text,
+  house_type text,
+  floors integer,
+  car_parking_spaces integer,
+  developer text,
+  subdivision text,
+  property_address text,
   created_at timestamptz not null default now()
 );
+
+-- Added for the "Post my listing" quick-entry / AI autofill wizard. Idempotent
+-- so this script can be re-run against a deployment created before these
+-- columns existed.
+alter table properties add column if not exists listing_type text;
+-- Listing type became optional (N/A selectable) — drop any existing NOT NULL/default.
+alter table properties alter column listing_type drop not null;
+alter table properties alter column listing_type drop default;
+alter table properties add column if not exists condition text;
+alter table properties add column if not exists house_type text;
+alter table properties add column if not exists floors integer;
+alter table properties add column if not exists car_parking_spaces integer;
+alter table properties add column if not exists developer text;
+alter table properties add column if not exists subdivision text;
+alter table properties add column if not exists property_address text;
+
+alter table properties drop constraint if exists properties_listing_type_check;
+alter table properties add constraint properties_listing_type_check
+  check (listing_type is null or listing_type in ('For Sale', 'For Rent/Lease', 'Pasalo'));
+
+alter table properties drop constraint if exists properties_condition_check;
+alter table properties add constraint properties_condition_check
+  check (condition is null or condition in ('New', 'Pre-owned'));
 
 -- Migrate an existing deployment's status values/constraint to the new labels.
 -- Drop the old constraint first — it still only allows the old labels, so

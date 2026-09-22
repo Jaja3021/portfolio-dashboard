@@ -10,6 +10,10 @@ export type PropertyType =
 
 export type PropertyStatus = "RFO" | "Pre-selling" | "Accept Reservation";
 
+export type ListingType = "For Sale" | "For Rent/Lease" | "Pasalo";
+
+export type PropertyCondition = "New" | "Pre-owned";
+
 export type PriceRangeKey =
   | "below-1m"
   | "1m-3m"
@@ -36,6 +40,14 @@ export interface Property {
   features: string[];
   amenities: string[];
   nearbyLocations: string[];
+  listingType: ListingType | null;
+  condition: PropertyCondition | null;
+  houseType: string | null;
+  floors: number | null;
+  carParkingSpaces: number | null;
+  developer: string | null;
+  subdivision: string | null;
+  propertyAddress: string | null;
   createdAt: string;
 }
 

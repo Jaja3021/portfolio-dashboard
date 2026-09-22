@@ -248,6 +248,14 @@ function mapPayloadToProperty(payload: ReturnType<typeof draftToPayload>): Omit<
     features: payload.features,
     amenities: payload.amenities,
     nearbyLocations: payload.nearby_locations,
+    listingType: payload.listing_type,
+    condition: payload.condition,
+    houseType: payload.house_type,
+    floors: payload.floors,
+    carParkingSpaces: payload.car_parking_spaces,
+    developer: payload.developer,
+    subdivision: payload.subdivision,
+    propertyAddress: payload.property_address,
     createdAt: new Date().toISOString(),
   };
 }
